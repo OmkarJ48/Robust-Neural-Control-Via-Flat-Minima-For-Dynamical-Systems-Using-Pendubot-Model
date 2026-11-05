@@ -1,0 +1,12 @@
+  % --- FEP optimizer ---
+    out.fep_opt.opt_iters = 200;
+    out.fep_opt.stepSize  = 0.001;
+    out.fep_opt.iter      = 1;
+    out.fep_opt.alpha_F   = 2000;
+    out.fep_opt.alpha_B   = 2;
+    out.fep_opt.J_val_des = 5;
+    out.fep_opt.B_val_des = -80;
+    out.fep_opt.noise_mu     = [0 0 0 0];
+    out.fep_opt.noise_sigma  = [0.00 0.00 0.00 0.00];
+    out.fep_opt.ineqconstr   = 1;
+    out.fep_opt.norm_type    = '2';

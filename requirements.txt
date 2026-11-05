@@ -1,1 +1,32 @@
+# -----------------------------------------------------------------------------
+# Python packages for the optional helper scripts in tools/
+#     pip install -r requirements.txt
+#
+# tools/fig_metrics.py        read saved MATLAB .fig files, compute Ts / %OS / RMS(u)
+# tools/pendubot_sim.py       NumPy re-simulation of the trained controllers
+# tools/reproduce_results.py  regenerate the README tables and figure
+#
+# Tested with Python 3.13, numpy 2.5.4, scipy 1.18.1, matplotlib 3.11.2.
+# -----------------------------------------------------------------------------
+numpy>=1.24
+scipy>=1.10
+matplotlib>=3.7
 
+# -----------------------------------------------------------------------------
+# The main project is MATLAB code. pip cannot install it; see README.md, "Setup".
+#
+# Required
+#   MATLAB R2024b (the release that saved the committed figures)
+#   CasADi 3.7.0 for MATLAB (casadi-3.7.0-windows64-matlab2018b was used);
+#       its bundled IPOPT and qpOASES plugins are needed for optimisation_type 3 and 5
+#   Statistics and Machine Learning Toolbox   (mvnrnd, used in every rollout)
+#
+# Required for teaching by demonstration (mainTeachingByDemonstration.m)
+#   Control System Toolbox                    (lqr, used by +controller/lqrController.m)
+#
+# Only for the legacy / example models (not needed for the Pendubot results)
+#   Symbolic Math Toolbox                     (+model/generateModel.m)
+#   Robotics Toolbox for MATLAB, Peter Corke  (+model/mdlPuma.m, +model/generateModel.m)
+#   urdf2casadi and its spatial_v2 helpers    (+model/urdf2casadiWrapper.m)
+#   iDynTree MATLAB bindings                  (+model/testurdf2casadiwrapperOnMatlab.m)
+# -----------------------------------------------------------------------------

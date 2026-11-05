@@ -1,0 +1,9 @@
+ % --- Adam optimizer ---
+    out.adam_opt.opt_iters = 1000;             % Slightly extended optimization
+    out.adam_opt.stepSize  = 0.00001; %1e-5;             % Slower learning rate for smooth convergence
+    out.adam_opt.beta1     = 0.9;             % Slightly stronger momentum
+    out.adam_opt.beta2     = 0.999;            % Standard beta2
+    out.adam_opt.batch     = 800;              % Full-batch updates to ensure consistency
+    out.adam_opt.iter      = 1;
+    out.adam_opt.noise_mu     = [0 0 0 0];     % No mean bias
+    out.adam_opt.noise_sigma  = [0 0 0 0]; % Controlled noise to encourage flatness
