@@ -3,7 +3,7 @@
 [![Verify results](https://github.com/OmkarJ48/Robust-Neural-Control-Via-Flat-Minima-For-Dynamical-Systems-Using-Pendubot-Model/actions/workflows/verify.yml/badge.svg)](https://github.com/OmkarJ48/Robust-Neural-Control-Via-Flat-Minima-For-Dynamical-Systems-Using-Pendubot-Model/actions/workflows/verify.yml)
 [![Licence: GPL-3.0](https://img.shields.io/badge/licence-GPL--3.0-blue.svg)](LICENSE)
 
-MATLAB + CasADi code for my MSc dissertation (ME7743, MSc Mechatronic Systems, Kingston University London, 2025; supervisor Dr Olga Napolitano).
+MATLAB + CasADi code for my MSc dissertation (ME7743, MSc Mechatronic Systems, Kingston University London, 2025; supervisor Dr Olga Napolitano). The full report is in [docs/dissertation_report.pdf](docs/dissertation_report.pdf).
 
 A small neural network balances a **Pendubot** (a two-link arm with one motor at the shoulder) in the upright position. The training pipeline tries to make the controller **robust to changes in the plant parameters** by penalising how sharply the closed-loop cost reacts to those parameters (a flat-minimum / flatness criterion). Three training dynamics are compared under the same simulator, horizon and cost: **Adam**, a **Yamashita-type projected flow ("Yama")** and the **null-space gradient flow of Feppon, Allaire and Dapogny ("FEP")**.
 
@@ -239,6 +239,7 @@ The `.fig` files in `docs/figures/matlab/` were identified by re-simulation. Eac
 │   └── results/{10,31,37}/           # the three reported runs (others are git-ignored)
 ├── config_templates/                 # older generic configs, kept off the MATLAB path
 ├── docs/
+│   ├── dissertation_report.pdf       # the MSc dissertation (43 pages)
 │   ├── CODE_OVERVIEW.md              # file-by-file reference
 │   ├── figures/                      # README figure + original MATLAB .fig files
 │   ├── data/                         # x_stack.mat / u_stack.mat (run 31 nominal test)
@@ -334,6 +335,8 @@ The bugs found while documenting the code are fixed on `main` and listed in the 
 ---
 
 ## 9. Notes for readers of the dissertation
+
+The report is in [docs/dissertation_report.pdf](docs/dissertation_report.pdf). It was converted from the submitted Word file with LibreOffice, so its fonts are metric-compatible substitutes (Liberation Serif for Times New Roman). Four positive-part symbols written as a trailing `g+`, and one literal backslash in an equation, were adjusted so that LibreOffice Math renders them; the text is otherwise unchanged.
 
 Re-analysing the saved code and data refines a few statements in the report:
 

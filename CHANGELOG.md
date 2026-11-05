@@ -19,6 +19,7 @@ These changes alter the simulated plant. The stored runs 10, 31 and 37 were prod
 
 ### Added
 - `LICENSE` (GPL-3.0), `CITATION.cff`, `CHANGELOG.md`, `.gitattributes`, `docs/CODE_OVERVIEW.md`.
+- `docs/dissertation_report.pdf`: the dissertation, converted from the submitted Word file.
 - `tools/selftest.py` and the GitHub Actions workflow `.github/workflows/verify.yml`.
 - `--plant as-run | corrected` in `tools/pendubot_sim.py` and `tools/reproduce_results.py`.
 

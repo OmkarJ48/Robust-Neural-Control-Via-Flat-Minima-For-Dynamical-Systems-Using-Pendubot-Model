@@ -2,6 +2,7 @@
 *.mat binary
 *.fig binary
 *.png binary
+*.pdf binary
 
 # Language statistics on GitHub
 *.m linguist-language=MATLAB
