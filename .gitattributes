@@ -1,0 +1,9 @@
+# Binary MATLAB data and figures: never diff or merge as text
+*.mat binary
+*.fig binary
+*.png binary
+
+# Language statistics on GitHub
+*.m linguist-language=MATLAB
+docs/** linguist-documentation
+*.urdf linguist-vendored

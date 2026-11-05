@@ -206,7 +206,7 @@ classdef fepOptimizer < handle
                 %% to check (summing is not gonna work when you have both mul positive and negative)
                 index_mul = mul < 0;
                 if(sum(index_mul))
-                    print("Warning, the active set has not been predicted correctly Using old lagrange multipliers")
+                    warning('fepOptimizer:activeSet', 'The active set has not been predicted correctly. Using old Lagrange multipliers.')
                     mul = mul_qp;
                 end
                 

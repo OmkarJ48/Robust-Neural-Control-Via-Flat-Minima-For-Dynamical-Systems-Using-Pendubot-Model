@@ -5,6 +5,7 @@
 # tools/fig_metrics.py        read saved MATLAB .fig files, compute Ts / %OS / RMS(u)
 # tools/pendubot_sim.py       NumPy re-simulation of the trained controllers
 # tools/reproduce_results.py  regenerate the README tables and figure
+# tools/selftest.py           consistency checks (also run by GitHub Actions)
 #
 # Tested with Python 3.13, numpy 2.5.4, scipy 1.18.1, matplotlib 3.11.2.
 # -----------------------------------------------------------------------------

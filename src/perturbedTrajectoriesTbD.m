@@ -51,6 +51,7 @@ end
         for jj = 1:N
             x_pert = total_x(:, jj) + mvnrnd(param_pert.mu, param_pert.Sigma)';
             tau = full(teacher.controller(x_pert, xDes, v_nominal));
+            tau = saturateTorque(tau, param_pert.torque_sat);  % same limit as the nominal trajectory
             cur_xs(:, jj) = x_pert;
             cur_taus(:, jj) = tau;
 

@@ -11,18 +11,21 @@ Torque de-normalisation ranges
 ------------------------------
 The network output is scaled by the range stored in
 ``test_drive/normalization_data.mat``. That file was regenerated several times
-and is not saved per run, so the range each controller was trained with was
-recovered by least squares from MATLAB's own saved rollouts (residual ~1e-13):
+and, until ``scripts/main.m`` was changed to copy it, was not saved per run.
+The range each reported controller was trained with was therefore recovered by
+least squares from MATLAB's own saved rollouts (residual ~1e-13) and stored in
+``results/<n>/normalization_data.mat``, which this script reads:
 
 * run 31: from ``results/31/x_stack.mat`` / ``u_stack.mat`` (26 Jul 2025)
 * run 37: from ``results/37/x_stack.mat`` / ``u_stack.mat`` (23 Aug 2025)
 * run 10: no rollout is stored in the folder; every saved run-10 figure
   (Optimization_*.fig, Testing_*.fig, 26 Jul 2025) uses the run-37 range, so
-  that range is used here.
-* "current" is the committed ``normalization_data.mat`` (23 Aug 2025, 18:58);
-  it is what ``scripts/main.m`` with ``flag_mode = 1`` uses today.
+  that range is stored for run 10 too.
+* "current file" is ``test_drive/normalization_data.mat`` (23 Aug 2025, 18:58);
+  it is what ``scripts/main.m`` with ``flag_mode = 1`` uses unless the run's
+  own file is copied over it.
 
-Usage:  python tools/reproduce_results.py [--plant coded|documented] [--no-plot]
+Usage:  python tools/reproduce_results.py [--plant as-run|corrected] [--no-plot]
 """
 from __future__ import annotations
 
@@ -39,15 +42,21 @@ import pendubot_sim as ps  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "robotics_result" / "robust_optimization" / "test_drive" / "results"
 
-NORM_RUN31 = (-103.14538630530888, 95.14078656412474)
-NORM_RUN37 = (-74.36120540244652, 68.69836805883476)
-NORM_CURRENT = (-69.3866936064508, 64.06446952934277)
-
-RUNS = [  # label, folder, as-trained normalisation
-    ("Adam (run 31)", "31", NORM_RUN31),
-    ("Yama (run 37)", "37", NORM_RUN37),
-    ("FEP (run 10)", "10", NORM_RUN37),
+RUNS = [  # label, results folder
+    ("Adam (run 31)", "31"),
+    ("Yama (run 37)", "37"),
+    ("FEP (run 10)", "10"),
 ]
+
+
+def load_norm(path: Path) -> tuple[float, float]:
+    """Read (min, max) from a normalization_data.mat (1x1 cell of struct min/max)."""
+    import scipy.io as sio
+    entry = sio.loadmat(path, squeeze_me=True, struct_as_record=False)["vec_denorm_out"]
+    return float(entry.min), float(entry.max)
+
+
+NORM_CURRENT = load_norm(RESULTS.parent / "normalization_data.mat")
 
 
 def load_init(folder: str) -> np.ndarray:
@@ -115,7 +124,7 @@ def plot(panels, out: Path):
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--plant", choices=ps.PLANTS, default="coded")
+    ap.add_argument("--plant", choices=ps.PLANTS, default="as-run")
     ap.add_argument("--no-plot", action="store_true")
     args = ap.parse_args(argv)
 
@@ -125,7 +134,8 @@ def main(argv=None) -> int:
     print(header)
     print("|---" * (header.count("|") - 1) + "|")
     panels = []
-    for label, folder, norm in RUNS:
+    for label, folder in RUNS:
+        norm = load_norm(RESULTS / folder / "normalization_data.mat")
         optimal = ps.load_params(RESULTS / folder / "optimal_param.mat")
         warm = load_init(folder)
         for weights_name, w in (("warm start", warm), ("trained", optimal)):
@@ -134,7 +144,7 @@ def main(argv=None) -> int:
                 print(fmt_row(label, weights_name, norm_name, metrics, contiguous))
                 if weights_name == "trained" and norm_name == "as trained":
                     panels.append((label, runs, metrics))
-    if not args.no_plot and args.plant == "coded":
+    if not args.no_plot and args.plant == "as-run":
         plot(panels, ROOT / "docs" / "figures" / "parameter_sweep_x1.png")
     return 0
 

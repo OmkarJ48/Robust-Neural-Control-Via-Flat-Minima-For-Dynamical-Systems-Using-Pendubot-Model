@@ -27,7 +27,9 @@ classdef Pendubot < model.baseModel
         function xDot(obj)
             obj.x_dot(1) = obj.x(3);
             obj.x_dot(2) = obj.x(4);                        
-            obj.x_dot(3:4) = inv(obj.M(obj.x(1:length(obj.x)/2), obj.v)) * (-obj.C(obj.x, obj.v)*obj.x(length(obj.x)/2+1:end) - obj.gravity(obj.x(1:length(obj.x)/2), obj.v) + [obj.u;0] - [obj.mu_1;obj.mu_2]' * obj.x(length(obj.x)/2+1:end));
+            obj.x_dot(3:4) = inv(obj.M(obj.x(1:length(obj.x)/2), obj.v)) * (-obj.C(obj.x, obj.v)*obj.x(length(obj.x)/2+1:end) - obj.gravity(obj.x(1:length(obj.x)/2), obj.v) + [obj.u;0] - diag([obj.mu_1, obj.mu_2]) * obj.x(length(obj.x)/2+1:end));
+            % Viscous friction acts per joint. Runs 10, 31 and 37 used
+            % [mu_1;mu_2]' * q_dot, which subtracted one scalar from both rows.
         end
         
         function createM(obj)

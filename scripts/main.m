@@ -151,6 +151,9 @@ end
             copyfile(fullfile(path_to_conf, 'experimentEnvOptConf.m'), cur_path_save_data);
             copyfile([absolute_path_to_save_control, '.m'], cur_path_save_data);
             copyfile([absolute_path_to_save_model, '.m'], cur_path_save_data);
+            % Keep the torque de-normalisation the controller was trained with
+            % (test_drive/normalization_data.mat is overwritten by teaching by demonstration)
+            copyfile(fullfile(path_to_conf, 'normalization_data.mat'), cur_path_save_data);
         end
 
         visualization(N, xInit, v_nominal, x, u, control_method, optimizer, integr, C_and_deriv, flat, save_data, cur_path_save_data, frame_step, struct_env_var);

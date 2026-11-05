@@ -21,7 +21,7 @@ gravityModulus = 9.80665;
 tol = 1e-10;
 
 %% wrapperurdf2casadi
-[v,x,u,xdot,v_nominal,~,~,~,~,urdf_model]=model.urdf2casadiWrapperConf();
+[v,x,u,xdot,v_nominal,~,~,~,~,urdf_model]=urdf2casadiWrapperModelConf();  % src/examples/urdf2casadiWrapperModelConf.m
 
 nrOfJoints = urdf_model.smds_.NB;
 g = [0;0;-gravityModulus];

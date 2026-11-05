@@ -22,7 +22,13 @@ classdef flatnessBuilder < handle
 
             %% todo add a sanity on the selected parameters to verify if they produce nan values or not in that case we resample them  
             if(type_of_flat.integral)
-                mu = v_nominal;
+                % The optimisers pass all Monte Carlo samples where one parameter
+                % vector is expected, so integral flatness does not run correctly.
+                error(['Integral flatness (type_of_flat.integral = true) is not supported ', ...
+                       'by the optimisers in +optim. Set type_of_flat.integral = false ', ...
+                       'in experimentEnvOptConf.m.']);
+                mu = v_nominal; %#ok<UNRCH>
+
                 Sigma = diag(type_of_flat.sigma);
                 check_dim = size(Sigma);
                 if(check_dim(1) ~= length(v_nominal))

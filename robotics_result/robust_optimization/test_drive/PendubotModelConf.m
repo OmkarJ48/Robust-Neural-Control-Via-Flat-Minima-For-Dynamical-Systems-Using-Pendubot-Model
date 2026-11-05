@@ -41,7 +41,10 @@ function [v,x,u,xdot,v_nominal,L,final_L_func,xInit,struct_env_var,pendubot_mode
     
     
     fixed_parameters   = [m_1, l_1, a_1, a_2, mu_1, mu_2];
-    map_2_assign_value = containers.Map({'l_1','l_2','m_1','m_2','a_1','a_2','mu_1','mu_2'}, {'fp_1','v_1','fp_2','v_2','fp_3','fp_4','fp_5','fp_6'});    
+    % fp_i -> fixed_parameters(i), v_i -> v(i). Every key must point at its own value:
+    %   fixed_parameters = [m_1, l_1, a_1, a_2, mu_1, mu_2],  v = [m_2, l_2]
+    % (Runs 10, 31 and 37 used an earlier map that swapped m_1<->l_1 and m_2<->l_2.)
+    map_2_assign_value = containers.Map({'l_1','l_2','m_1','m_2','a_1','a_2','mu_1','mu_2'}, {'fp_2','v_2','fp_1','v_1','fp_3','fp_4','fp_5','fp_6'});
     pendubot_model    = model.Pendubot(x,u,v,fixed_parameters,map_2_assign_value);
 
     pendubot_model.xDot();

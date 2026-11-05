@@ -3,7 +3,7 @@
 
 A NumPy re-implementation of the closed loop used by ``scripts/main.m``:
 
-* ``src/+model/Pendubot.m`` dynamics, including the scalar friction term,
+* ``src/+model/Pendubot.m`` dynamics (friction as in the selected plant, see below),
 * explicit Euler integration ``x+ = x + f(x, u) * DT`` (``src/integra.m``, zero noise),
 * the 4-10-1 tanh network of ``src/+controller/neuralController.m`` with output
   de-normalisation ``tau = (y + 1) / 2 * (max - min) + min``,
@@ -15,19 +15,24 @@ run-10 and run-37 figures to about 1e-12 (see ``--validate``).
 
 Plant parameters
 ----------------
-``test_drive/PendubotModelConf.m`` routes its values through ``map_2_assign_value``. As
-written, the map assigns ``fixed_parameters(1)`` (= m_1) to ``l_1``,
-``fixed_parameters(2)`` (= l_1) to ``m_1``, ``v(1)`` (= m_2) to ``l_2`` and
-``v(2)`` (= l_2) to ``m_2``. The plant that was actually simulated therefore
-has m1 = 0.1032, l1 = 0.193, m2 = 0.1065 and l2 = 0.073. ``--plant coded``
-(the default) reproduces that; ``--plant documented`` uses the intended
-values m1 = 0.193, l1 = 0.1032, m2 = 0.073 and l2 = 0.1065.
+``PendubotModelConf.m`` routes its values through ``map_2_assign_value``. The
+copy used for runs 10, 31 and 37 (saved in ``results/<n>/``) assigned
+``fixed_parameters(1)`` (= m_1) to ``l_1``, ``fixed_parameters(2)`` (= l_1) to
+``m_1``, ``v(1)`` (= m_2) to ``l_2`` and ``v(2)`` (= l_2) to ``m_2``, so those
+runs simulated m1 = 0.1032, l1 = 0.193, m2 = 0.1065 and l2 = 0.073. Their
+``Pendubot.m`` also applied friction as ``[mu_1;mu_2]' * q_dot``, a scalar
+subtracted from both joint equations.
+
+* ``--plant as-run`` (the default) reproduces runs 10, 31 and 37.
+* ``--plant corrected`` matches the current code: m1 = 0.193, l1 = 0.1032,
+  m2 = 0.073, l2 = 0.1065 and per-joint friction ``diag(mu_1, mu_2) * q_dot``.
 
 Examples
 --------
     python tools/pendubot_sim.py robotics_result/robust_optimization/test_drive/results/10/optimal_param.mat \
-        --norm -74.361205 68.698368 --sweep
-    python tools/pendubot_sim.py docs/data/... --validate docs/figures/matlab/Testing_2.fig
+        --norm -74.36120540244652 68.69836805883476 --sweep
+    python tools/pendubot_sim.py robotics_result/robust_optimization/test_drive/results/10/optimal_param.mat \
+        --norm -74.36120540244652 68.69836805883476 --validate docs/figures/matlab/Testing_2.fig
 """
 from __future__ import annotations
 
@@ -46,9 +51,9 @@ X_INIT = np.array([2.98, 0.1, 0.3, 0.3])
 A1, A2, MU, G = 0.1483, 0.1804, 0.01, 9.8          # link lengths, friction, gravity
 V_NOMINAL = np.array([0.073, 0.1065])              # PendubotModelConf.m: [m_2, l_2]
 PLANTS = {
-    # (m1, l1) and a function v -> (m2, l2)
-    "coded": ((0.1032, 0.193), lambda v: (v[1], v[0])),
-    "documented": ((0.193, 0.1032), lambda v: (v[0], v[1])),
+    # (m1, l1), a function v -> (m2, l2), scalar friction?
+    "as-run": ((0.1032, 0.193), lambda v: (v[1], v[0]), True),       # runs 10, 31, 37
+    "corrected": ((0.193, 0.1032), lambda v: (v[0], v[1]), False),   # current code
 }
 
 
@@ -80,7 +85,7 @@ def controller(w: np.ndarray, norm: tuple[float, float]):
     return lambda x: (np.tanh(x @ w1 + b1) @ w2 + b2 + 1) / 2 * (hi - lo) + lo
 
 
-def xdot(x, u, m1, l1, m2, l2):
+def xdot(x, u, m1, l1, m2, l2, scalar_friction=True):
     i1, i2 = m1 * A1 ** 2 / 12, m2 * A2 ** 2 / 12
     k1 = i1 + i2 + m1 * l1 ** 2 + m2 * (A1 ** 2 + l2 ** 2)
     k2 = i2 + m2 * l2 ** 2
@@ -91,31 +96,34 @@ def xdot(x, u, m1, l1, m2, l2):
     mass = np.array([[k1 + 2 * k3 * c, k2 + k3 * c], [k2 + k3 * c, k2]])
     cor = np.array([[-k3 * s * x[3], -k3 * s * (x[2] + x[3])], [k3 * s * x[2], 0.0]])
     grav = np.array([k4 * G * np.sin(x[0]) + k5 * G * np.sin(x[0] + x[1]), k5 * G * np.sin(x[0] + x[1])])
-    friction = MU * x[2] + MU * x[3]          # [mu_1;mu_2]' * qd  -> a scalar (see README)
+    if scalar_friction:
+        friction = MU * x[2] + MU * x[3]      # [mu_1;mu_2]' * qd: one scalar on both rows (runs 10, 31, 37)
+    else:
+        friction = MU * x[2:]                 # diag(mu_1, mu_2) * qd (current Pendubot.m)
     qdd = np.linalg.solve(mass, -cor @ x[2:] - grav + np.array([u, 0.0]) - friction)
     return np.r_[x[2:], qdd]
 
 
-def simulate(w, norm, scale=1.0, plant="coded"):
+def simulate(w, norm, scale=1.0, plant="as-run"):
     """Return (X, U): states after each step (like x_stack) and torques (u_stack)."""
-    (m1, l1), split = PLANTS[plant]
+    (m1, l1), split, scalar_friction = PLANTS[plant]
     m2, l2 = split(V_NOMINAL * scale)
     ctrl = controller(w, norm)
     x, xs, us = X_INIT.copy(), [], []
     with np.errstate(all="ignore"):
         for _ in range(N):
             u = ctrl(x)
-            x = x + xdot(x, u, m1, l1, m2, l2) * DT
+            x = x + xdot(x, u, m1, l1, m2, l2, scalar_friction) * DT
             xs.append(x.copy())
             us.append(u)
     return np.array(xs), np.array(us)
 
 
-def sweep(w, norm, plant="coded", runs=9):
+def sweep(w, norm, plant="as-run", runs=9):
     return [simulate(w, norm, 1 + fm.SWEEP_STEP * i, plant) for i in range(runs)]
 
 
-def validate(w, norm, fig: Path, plant="coded") -> float:
+def validate(w, norm, fig: Path, plant="as-run") -> float:
     """Max abs difference to a figure, over the runs that did not diverge."""
     chans = fm.split_channels(fm.read_lines(fig), 5)
     worst = 0.0
@@ -132,7 +140,7 @@ def main(argv=None) -> int:
     ap.add_argument("params", type=Path, help="optimal_param.mat of a run")
     ap.add_argument("--norm", nargs=2, type=float, required=True, metavar=("MIN", "MAX"),
                     help="torque de-normalisation range the controller was trained with")
-    ap.add_argument("--plant", choices=PLANTS, default="coded")
+    ap.add_argument("--plant", choices=PLANTS, default="as-run")
     ap.add_argument("--sweep", action="store_true", help="run the 9-point m2/l2 sweep")
     ap.add_argument("--validate", type=Path, help="compare against a .fig produced by visualization.m")
     args = ap.parse_args(argv)

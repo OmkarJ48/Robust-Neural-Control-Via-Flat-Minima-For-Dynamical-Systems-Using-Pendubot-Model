@@ -92,6 +92,10 @@ if flag_mode == 0
     if strcmp(data_generation_selector, 'perturbed')
         [all_traj_x, all_traj_tau, total_x, total_tau] = perturbedTrajectoriesTbD(xInit, N, teacher, xDes, v_nominal, integr, param_pert);
     elseif strcmp(data_generation_selector, 'basin')
+        if exist('perturbedBasinTbD', 'file') ~= 2
+            error(['data_generation_selector = ''basin'' needs perturbedBasinTbD.m, ', ...
+                   'which is not part of this repository. Use ''perturbed'' instead.']);
+        end
         [all_traj_x, all_traj_tau, total_x, total_tau] = perturbedBasinTbD(xInit, N, teacher, xDes, v_nominal, integr, param_basin);
     else
         error('Invalid data_generation_selector.');

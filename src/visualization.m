@@ -5,7 +5,8 @@ function visualization(N, xInit, v_nominal, x, u, ctrl, adam, integr, C_and_deri
         error('the controller parameters are empty fix it! error raised by visualization')
     end
     
-    if(isfield(adam,'J_stack'))
+    % optimisers are handle objects (isprop); loaded test results are structs (isfield)
+    if((isobject(adam) && isprop(adam,'J_stack')) || (isstruct(adam) && isfield(adam,'J_stack')))
         figure;plot(adam.J_stack);title('Cost');
         figure;plot(adam.B_stack);title('Flatness');
     end

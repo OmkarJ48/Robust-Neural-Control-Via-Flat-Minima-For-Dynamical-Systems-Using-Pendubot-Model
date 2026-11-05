@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+title: "Robust Neural Control via Flat Minima for Dynamical Systems (Pendubot)"
+type: software
+authors:
+  - family-names: Joshi
+    given-names: Omkar Anant
+    affiliation: "Kingston University London"
+license: GPL-3.0-only
+repository-code: "https://github.com/OmkarJ48/Robust-Neural-Control-Via-Flat-Minima-For-Dynamical-Systems-Using-Pendubot-Model"
+keywords:
+  - robust control
+  - neural network controller
+  - flat minima
+  - Pendubot
+  - underactuated robotics
+  - CasADi
+  - MATLAB
+abstract: >-
+  MATLAB and CasADi code for an MSc dissertation (ME7743, MSc Mechatronic
+  Systems, Kingston University London, 2025). A neural controller balances a
+  Pendubot upright and is trained with a flatness criterion that penalises how
+  sharply the closed-loop cost reacts to the plant parameters. Adam, a
+  Yamashita-type projected flow and the null-space gradient flow of Feppon,
+  Allaire and Dapogny are compared under the same simulator and cost.
+references:
+  - type: thesis
+    title: "Robust Neural Control via Flat Minima for Dynamical Systems"
+    authors:
+      - family-names: Joshi
+        given-names: Omkar Anant
+    thesis-type: "MSc dissertation"
+    institution:
+      name: "Kingston University London"
+    year: 2025

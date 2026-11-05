@@ -1,0 +1,35 @@
+name: Verify results
+
+# Re-simulates the reported controllers in Python and checks them against the
+# MATLAB output stored in the repository (see tools/selftest.py).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run consistency checks
+        run: python tools/selftest.py
+
+      - name: Regenerate results tables
+        run: |
+          python tools/reproduce_results.py --no-plot
+          python tools/reproduce_results.py --plant corrected --no-plot
