@@ -13,7 +13,7 @@ A small neural network balances a **Pendubot** (a two-link arm with one motor at
 
 > **Status.** The reported runs (10, 31 and 37) were produced by code with two plant-model bugs: a swapped parameter map and a scalar friction term. Both are fixed on `main` ([CHANGELOG](CHANGELOG.md)).
 >
-> - **Reproducing the dissertation:** use the Python tools, which reproduce MATLAB to about 1e-12, or the git tag [`v1.0.0`](#7-how-to-run).
+> - **Reproducing the dissertation:** use the Python tools, which reproduce MATLAB to about 1e-12, or commit [`d7dc4db`](#7-how-to-run), the code as it was used for the dissertation.
 > - **On the corrected plant:** none of the stored controllers, not even the warm starts, is stable. Re-running the pipeline on the corrected plant (teaching by demonstration, then training) is the next step.
 
 ---
@@ -283,10 +283,10 @@ Open the scripts in `scripts/` and run them from the **MATLAB Editor** with the 
 **Reproduce the dissertation runs in MATLAB**
 
 ```bash
-git checkout v1.0.0
+git checkout d7dc4db
 ```
 
-`v1.0.0` is the code as it was used for the dissertation (reorganised into `scripts/` and `src/`, nothing else changed). Before re-testing run `<n>` there:
+Commit `d7dc4db` is the code as it was used for the dissertation (reorganised into `scripts/` and `src/`, nothing else changed), listed as 1.0.0 in the [CHANGELOG](CHANGELOG.md). Before re-testing run `<n>` there:
 
 1. Copy `results/<n>/normalization_data.mat` from `main` over `test_drive/normalization_data.mat`.
 2. For run 10, also copy `results/10/PendubotModelConf.m` over `test_drive/PendubotModelConf.m`. This only changes the cost, not the plotted trajectories.

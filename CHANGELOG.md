@@ -1,8 +1,8 @@
 # Changelog
 
-## [1.1.0]: fixes after the dissertation
+## [1.1.0]: fixes after the dissertation (commit `a91ca62` and later)
 
-These changes alter the simulated plant. The stored runs 10, 31 and 37 were produced by `v1.0.0`; their folders in `results/` are unchanged snapshots. MATLAB was not available while these changes were made: each one was checked by re-simulating in Python (`tools/selftest.py`) and by static analysis, but not run in MATLAB.
+These changes alter the simulated plant. The stored runs 10, 31 and 37 were produced by the 1.0.0 code (commit `d7dc4db`); their folders in `results/` are unchanged snapshots. MATLAB was not available while these changes were made: each one was checked by re-simulating in Python (`tools/selftest.py`) and by static analysis, but not run in MATLAB.
 
 ### Fixed
 - **Swapped Pendubot parameters** (`test_drive/PendubotModelConf.m`). `map_2_assign_value` gave `l_1` the value of m1, `m_1` the value of l1, `l_2` the value of m2 and `m_2` the value of l2. Every parameter now receives its own value.
@@ -25,7 +25,7 @@ These changes alter the simulated plant. The stored runs 10, 31 and 37 were prod
 ### Removed
 - `docs/code_overview.txt`. Its paths were out of date and some descriptions were wrong; it is replaced by `docs/CODE_OVERVIEW.md`.
 
-## [1.0.0]: code as used for the dissertation
+## [1.0.0]: code as used for the dissertation (commit `d7dc4db`)
 
 - MATLAB/CasADi code, the three reported runs (10 = FEP, 31 = Adam, 37 = Yama), original figures and Python analysis tools.
 - MATLAB code organised into `scripts/` (entry points) and `src/` (library). The scripts locate the repository themselves instead of relying on `pwd`; nothing else was changed.
