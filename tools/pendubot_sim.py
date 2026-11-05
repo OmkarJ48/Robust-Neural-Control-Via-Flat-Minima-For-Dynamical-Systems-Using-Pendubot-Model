@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Re-simulate trained Pendubot controllers without MATLAB.
 
-A NumPy re-implementation of the closed loop used by ``main.m``:
+A NumPy re-implementation of the closed loop used by ``scripts/main.m``:
 
-* ``+model/Pendubot.m`` dynamics, including the scalar friction term,
-* explicit Euler integration ``x+ = x + f(x, u) * DT`` (``integra.m``, zero noise),
-* the 4-10-1 tanh network of ``+controller/neuralController.m`` with output
+* ``src/+model/Pendubot.m`` dynamics, including the scalar friction term,
+* explicit Euler integration ``x+ = x + f(x, u) * DT`` (``src/integra.m``, zero noise),
+* the 4-10-1 tanh network of ``src/+controller/neuralController.m`` with output
   de-normalisation ``tau = (y + 1) / 2 * (max - min) + min``,
-* the parameter sweep of ``visualization.m``: ``v_nominal .* (1 + (ii-1)*0.1)``.
+* the parameter sweep of ``src/visualization.m``: ``v_nominal .* (1 + (ii-1)*0.1)``.
 
 It reproduces MATLAB to round-off: for run 31 it matches the saved
 ``docs/data/x_stack.mat`` to about 1e-13, and the trajectories stored in the
@@ -15,7 +15,7 @@ run-10 and run-37 figures to about 1e-12 (see ``--validate``).
 
 Plant parameters
 ----------------
-``PendubotModelConf.m`` routes its values through ``map_2_assign_value``. As
+``test_drive/PendubotModelConf.m`` routes its values through ``map_2_assign_value``. As
 written, the map assigns ``fixed_parameters(1)`` (= m_1) to ``l_1``,
 ``fixed_parameters(2)`` (= l_1) to ``m_1``, ``v(1)`` (= m_2) to ``l_2`` and
 ``v(2)`` (= l_2) to ``m_2``. The plant that was actually simulated therefore

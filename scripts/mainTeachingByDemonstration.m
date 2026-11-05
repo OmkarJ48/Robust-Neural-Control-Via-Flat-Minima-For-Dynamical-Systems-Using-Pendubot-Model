@@ -8,13 +8,18 @@ clc                     % Clear command window
 addpath('D:\Family\Omkar\Dissertation - Robust Neural Control via Flatness Optimization for Dynamical Systems\matlab_code\matlab_code\casadi');
 import casadi.*         % Import CasADi functions
 
+% Project paths (this script lives in <repo>/scripts; the code is in <repo>/src)
+repo_root = fileparts(fileparts(mfilename('fullpath')));
+addpath(fullfile(repo_root, 'src'));
+addpath(fullfile(repo_root, 'src', 'examples'));
+
 %% Control flags
 flag_mode = 1;          % 0: run teaching and training; 1: test trained controller
 save_data = 1;          % 1: enable saving normalization and training data
 
 % Define configuration folder for this experiment
 name_folder_conf = 'test_drive';
-path_to_conf = strcat(pwd,'\robotics_result\robust_optimization\',name_folder_conf);
+path_to_conf = fullfile(repo_root, 'robotics_result', 'robust_optimization', name_folder_conf);
 addpath(path_to_conf);  % Add config folder to path
 
 teacher_selector = 'lqr';           % Choose expert controller: 'pid' or 'lqr'

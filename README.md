@@ -32,8 +32,8 @@ A small neural network balances a **Pendubot** (a two-link arm with one motor at
 
 | # | Objective | Where it lives in this repository |
 |---|---|---|
-| 1 | Integrate a CasADi differentiable simulator with a neural policy and a flatness regulariser | `integra.m`, `costAndDerBuilder.m`, `flatnessBuilder.m`, `+controller/neuralController.m` |
-| 2 | Implement and compare Adam, Yama and FEP training dynamics | `+optim/adamOptimizer.m`, `+optim/yamaOptimizer.m`, `+optim/fepOptimizer.m`, runs 31, 37 and 10 |
+| 1 | Integrate a CasADi differentiable simulator with a neural policy and a flatness regulariser | `src/integra.m`, `src/costAndDerBuilder.m`, `src/flatnessBuilder.m`, `src/+controller/neuralController.m` |
+| 2 | Implement and compare Adam, Yama and FEP training dynamics | `src/+optim/adamOptimizer.m`, `src/+optim/yamaOptimizer.m`, `src/+optim/fepOptimizer.m`, runs 31, 37 and 10 |
 | 3 | Quantify settling time (Ts) and overshoot (%OS), and analyse robustness | [Section 4](#4-results), `tools/` |
 | 4 | Identify failure modes and propose mitigations | [Section 4.4](#44-interpretation), [Section 8](#8-known-issues) |
 
@@ -45,7 +45,7 @@ Scope: simulation only, one actuator, no hardware-in-the-loop and no sensor dela
 
 ### 2.1 Plant
 
-State `x = [q1, q2, q1_dot, q2_dot]`. `q1` is measured from the downward vertical and `q2` relative to link 1, so the upright target is `x_des = [pi, 0, 0, 0]`. The input is the shoulder torque `u1`. The dynamics in `+model/Pendubot.m` follow Lanari and Oriolo:
+State `x = [q1, q2, q1_dot, q2_dot]`. `q1` is measured from the downward vertical and `q2` relative to link 1, so the upright target is `x_des = [pi, 0, 0, 0]`. The input is the shoulder torque `u1`. The dynamics in `src/+model/Pendubot.m` follow Lanari and Oriolo:
 
 ```
 M(q) q_ddot + C(q, q_dot) q_dot + G(q) = [u1; 0] - friction
@@ -78,7 +78,7 @@ Run 10 used the same cost with the raw angle `x2` in place of `x2_n` (see its ow
 
 ### 2.3 Controller
 
-`+controller/neuralController.m`: a 4-10-1 network, `u = W2' tanh(W1' x + b1) + b2`, with 61 parameters. The output is de-normalised to the range of the teacher torques stored in `normalization_data.mat`: `tau = (y + 1)/2 (max - min) + min`. Input normalisation is off.
+`src/+controller/neuralController.m`: a 4-10-1 network, `u = W2' tanh(W1' x + b1) + b2`, with 61 parameters. The output is de-normalised to the range of the teacher torques stored in `normalization_data.mat`: `tau = (y + 1)/2 (max - min) + min`. Input normalisation is off.
 
 ### 2.4 Uncertainty and robustness test
 
@@ -101,11 +101,11 @@ A small B means the cost is locally insensitive to `m2` and `l2`. Optimisers tha
 
 ### 3.2 Pipeline
 
-1. **Warm start by teaching by demonstration** (`mainTeachingByDemonstration.m`). An LQR teacher (`+controller/lqrController.m`, Q = diag(5, 5, 0.5, 0.5), R = 20, linearised at the upright point) generates one nominal trajectory plus 19 trajectories perturbed with Gaussian state noise (Sigma = I). The network is fitted to the teacher torques with mini-batch Adam (MSE). This writes `normalization_data.mat` and `optimal_param_teaching.mat`.
-2. **Training** (`main.m`, `flag_mode = 0`). The rollout cost J and flatness B are built symbolically. Then the optimiser selected by `optimization_type` in `experimentEnvOptConf.m` runs, and each run is saved to `results/<n>/`.
-3. **Testing** (`main.m`, `flag_mode = 1`). The weights in `results/<folder_number>/optimal_param.mat` are loaded, and `visualization.m` plots the nominal run and the nine-point sweep.
+1. **Warm start by teaching by demonstration** (`scripts/mainTeachingByDemonstration.m`). An LQR teacher (`src/+controller/lqrController.m`, Q = diag(5, 5, 0.5, 0.5), R = 20, linearised at the upright point) generates one nominal trajectory plus 19 trajectories perturbed with Gaussian state noise (Sigma = I). The network is fitted to the teacher torques with mini-batch Adam (MSE). This writes `normalization_data.mat` and `optimal_param_teaching.mat`.
+2. **Training** (`scripts/main.m`, `flag_mode = 0`). The rollout cost J and flatness B are built symbolically. Then the optimiser selected by `optimization_type` in `experimentEnvOptConf.m` runs, and each run is saved to `results/<n>/`.
+3. **Testing** (`scripts/main.m`, `flag_mode = 1`). The weights in `results/<folder_number>/optimal_param.mat` are loaded, and `visualization.m` plots the nominal run and the nine-point sweep.
 
-### 3.3 Optimisers (`+optim/`)
+### 3.3 Optimisers (`src/+optim/`)
 
 | `optimization_type` | Class | What the update does |
 |---|---|---|
@@ -198,20 +198,22 @@ The `.fig` files in `docs/figures/matlab/` were identified by re-simulating ever
 
 ```
 .
-├── main.m                            # train (flag_mode = 0) or test (flag_mode = 1) a controller
-├── mainTeachingByDemonstration.m     # LQR teacher -> warm-start network
-├── perturbedTrajectoriesTbD.m        # teacher trajectories + perturbed copies
-├── costAndDerBuilder.m               # symbolic rollout cost J and its gradient
-├── costAndDerBuilderTeaching.m       # MSE cost for teaching by demonstration
-├── flatnessBuilder.m                 # flatness measure B and its gradient
-├── integra.m                         # one-step Euler integrator (CasADi)
-├── visualization.m, visualizationAux.m
-├── globalNormalize.m, creatingGridBoundUncertainVariable.m
-├── *ModelConf.m, dummyControllerConf.m   # configs for the example models (cart-pole, 3R arm, ...)
-├── +controller/                      # neural, LQR, PID and dummy controllers
-├── +model/                           # Pendubot and example models, URDF wrapper
-│   └── urdf/                         # KUKA / two-link URDFs (legacy examples)
-├── +optim/                           # adam, yama, yamaAdaGrad, ipopt, fep optimisers
+├── scripts/                          # entry points - run these
+│   ├── main.m                        # train (flag_mode = 0) or test (flag_mode = 1) a controller
+│   └── mainTeachingByDemonstration.m # LQR teacher -> warm-start network
+├── src/                              # library code (added to the MATLAB path by the scripts)
+│   ├── integra.m                     # one-step Euler integrator (CasADi)
+│   ├── costAndDerBuilder.m           # symbolic rollout cost J and its gradient
+│   ├── costAndDerBuilderTeaching.m   # MSE cost for teaching by demonstration
+│   ├── flatnessBuilder.m             # flatness measure B and its gradient
+│   ├── perturbedTrajectoriesTbD.m    # teacher trajectories + perturbed copies
+│   ├── visualization.m, visualizationAux.m
+│   ├── globalNormalize.m, creatingGridBoundUncertainVariable.m
+│   ├── +controller/                  # neural, LQR, PID and dummy controllers
+│   ├── +model/                       # Pendubot and example models, URDF wrapper
+│   │   └── urdf/                     # KUKA / two-link URDFs (legacy examples)
+│   ├── +optim/                       # adam, yama, yamaAdaGrad, ipopt, fep optimisers
+│   └── examples/                     # configs for the example models (cart-pole, 3R arm, mass-spring, URDF, dummy)
 ├── robotics_result/robust_optimization/test_drive/
 │   ├── experimentEnvOptConf.m        # horizon, flatness and optimiser settings
 │   ├── PendubotModelConf.m           # Pendubot experiment config (used by main.m)
@@ -225,12 +227,14 @@ The `.fig` files in `docs/figures/matlab/` were identified by re-simulating ever
 │   ├── figures/                      # README figure + original MATLAB .fig files
 │   ├── data/                         # x_stack.mat / u_stack.mat (run 31 nominal test)
 │   ├── configs/                      # Robust_ADAM.txt, Robust_FEP.txt config snippets
-│   └── code_overview.txt             # original per-file code description
+│   └── code_overview.txt             # original per-file code description (pre-reorganisation paths)
 ├── tools/                            # Python: .fig reader, re-simulation, results script
 └── requirements.txt                  # Python packages for tools/ + MATLAB toolbox list
 ```
 
-`config_templates/` holds an older `PendubotModelConf.m` (unit parameters, one uncertain parameter) and a cart-pole `neuralControllerConf.m` (`[6 10 3]`). They are kept out of the project root on purpose. MATLAB gives files in the current folder priority over everything on the path, so these files would override the experiment versions in `test_drive/` and make `main.m` fail.
+No MATLAB code sits in the repository root. The two scripts in `scripts/` add `src/`, `src/examples/` and `test_drive/` to the MATLAB path themselves, with `test_drive/` added last so its configs take precedence.
+
+`config_templates/` holds an older `PendubotModelConf.m` (unit parameters, one uncertain parameter) and a cart-pole `neuralControllerConf.m` (`[6 10 3]`). They are deliberately kept off the MATLAB path: if found first, they would replace the experiment versions in `test_drive/` and make `main.m` fail.
 
 ---
 
@@ -240,35 +244,35 @@ The `.fig` files in `docs/figures/matlab/` were identified by re-simulating ever
    - **Statistics and Machine Learning Toolbox**: `mvnrnd` is called in every rollout.
    - **Control System Toolbox**: `lqr`, needed only for teaching by demonstration.
 2. **CasADi 3.7.0 for MATLAB** (the runs used `casadi-3.7.0-windows64-matlab2018b`). Download it from <https://web.casadi.org/get/> and unzip it anywhere outside the repository. The bundled IPOPT and qpOASES plugins are needed for `optimization_type` 3 and 5.
-3. **Point the scripts to CasADi.** The `addpath(...)` line near the top of `main.m` (line 7) and `mainTeachingByDemonstration.m` (line 8) holds a hard-coded `D:\...` path; change it to your CasADi folder.
+3. **Point the scripts to CasADi.** The `addpath(...)` line near the top of `scripts/main.m` (line 7) and `scripts/mainTeachingByDemonstration.m` (line 8) holds a hard-coded `D:\...` path; change it to your CasADi folder.
 4. **Optional, for `tools/`:** Python 3.10 or newer, then:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-The example models in `+model/` (Puma 560, URDF wrapper, iDynTree test) need extra toolboxes, listed in `requirements.txt`. The Pendubot experiments do not use them.
+The example models in `src/+model/` (Puma 560, URDF wrapper, iDynTree test) need extra toolboxes, listed in `requirements.txt`. The Pendubot experiments do not use them.
 
 ---
 
 ## 7. How to run
 
-Set MATLAB's **current folder to the repository root**, because all paths are built from `pwd`. Run the scripts from the **MATLAB Editor** with the script as the active tab: `experimentEnvOptConf.m` records `matlab.desktop.editor.getActiveFilename`, and `main.m` copies that file into the results folder.
+Open the scripts in `scripts/` and run them from the **MATLAB Editor** with the script as the active tab. They find the repository from their own location, so the current folder does not matter. The Editor is needed because `experimentEnvOptConf.m` records `matlab.desktop.editor.getActiveFilename`, and `main.m` copies that file into the results folder.
 
 **Re-test a reported run**
 
-1. In `main.m`, set `flag_mode = 1` and `folder_number` to 10, 31 or 37 (line 156).
+1. In `scripts/main.m`, set `flag_mode = 1` (line 21) and `folder_number` to 10, 31 or 37 (line 161).
 2. Run it. This plots the nominal run and the 1.0x–1.8x sweep. The test uses the committed `normalization_data.mat`, which is not the range runs 10 and 31 were trained with (see [4.5](#45-how-these-numbers-were-obtained)).
 
 **Train a new controller**
 
 1. In `test_drive/experimentEnvOptConf.m`, choose `optimization_type` (1 Adam, 2 Yama, 3 IPOPT, 4 YamaAdaGrad, 5 FEP) and its settings.
-2. In `main.m`, set `flag_mode = 0`. Keep `load_random_predefined_init_point = 'load'` and `result_from_teaching = 1` to start from the warm start.
+2. In `scripts/main.m`, set `flag_mode = 0`. Keep `load_random_predefined_init_point = 'load'` and `result_from_teaching = 1` to start from the warm start.
 3. Run it. The results go to the next free `results/<n>/` folder, together with a copy of the config, model and controller files.
 
 **Regenerate the warm start (optional)**
 
-Run `mainTeachingByDemonstration.m` with `flag_mode = 0`. This **overwrites** `test_drive/normalization_data.mat` and `optimal_param_teaching.mat`, which changes how every previously trained controller behaves when re-tested. Back them up first. Only `data_generation_selector = 'perturbed'` works (see [issue 11](#8-known-issues)).
+Run `scripts/mainTeachingByDemonstration.m` with `flag_mode = 0`. This **overwrites** `test_drive/normalization_data.mat` and `optimal_param_teaching.mat`, which changes how every previously trained controller behaves when re-tested. Back them up first. Only `data_generation_selector = 'perturbed'` works (see [issue 11](#8-known-issues)).
 
 **Without MATLAB**
 
@@ -288,12 +292,12 @@ python tools/fig_metrics.py docs/figures/matlab/*.fig
 
 ## 8. Known issues
 
-The code is committed exactly as it was used for the dissertation. The issues below were found while documenting it; none of them has been changed in the code.
+The code is committed as it was used for the dissertation. The only change is in the two scripts in `scripts/`: after the files were moved out of the repository root, they find the repository from their own location and add `src/` to the MATLAB path. The copies inside `results/<n>/` are untouched snapshots. The issues below were found while documenting the code; none of them has been fixed.
 
 1. **Swapped plant parameters.** In `PendubotModelConf.m`, `map_2_assign_value` assigns `fixed_parameters(1)` (= m1) to `l_1`, `fixed_parameters(2)` (= l1) to `m_1`, `v(1)` (= m2) to `l_2` and `v(2)` (= l2) to `m_2`. Every reported run therefore used m1 = 0.1032, l1 = 0.193, m2 = 0.1065 and l2 = 0.073. The swap was confirmed by re-simulation (error 4e-13 with the swap, divergence without it).
 2. **The torque normalisation is not stored with each run.** `neuralController.m` always reads `test_drive/normalization_data.mat`, which teaching by demonstration overwrites. A controller tested after a new warm start is therefore scaled differently from the controller that was trained. Copying `normalization_data.mat` into each `results/<n>/` folder would fix this.
 3. **Very large output scale.** The teacher torque range (about ±70–100 N m) sets the de-normalisation, while about 0.02 N m is needed at upright. The range is that large because `perturbedTrajectoriesTbD.m` saturates only the nominal trajectory's torques (±0.5 N m). The 19 perturbed copies, with state noise Sigma = I, are not saturated.
-4. **Friction is a single scalar.** In `+model/Pendubot.m`, `[mu_1;mu_2]' * q_dot` gives one number, which is subtracted from both joint equations. The usual form is `diag([mu_1, mu_2]) * q_dot`.
+4. **Friction is a single scalar.** In `src/+model/Pendubot.m`, `[mu_1;mu_2]' * q_dot` gives one number, which is subtracted from both joint equations. The usual form is `diag([mu_1, mu_2]) * q_dot`.
 5. **Normalisation of x2 in the cost** uses `2 (x2 + pi) / (3 pi) - 1`, so the range is 3π where 2π was probably intended. This only rescales the weight on x2.
 6. **`flatnessBuilder.m`:**
    - In `'2order'` mode the accumulator starts at 1, which adds 1/2 inside the log.
@@ -317,9 +321,9 @@ The code is committed exactly as it was used for the dissertation. The issues be
     - Test runs write `x_stack.mat` and `state_and_control.png` directly into `results/`.
 11. **Teaching by demonstration:** `perturbedBasinTbD.m` (the `'basin'` data mode) is not part of the repository. `PIDLinearizedController` returns a 2-element torque for this 1-input plant, and its `Ki` gain is unused.
 12. **Legacy example models** (not used for the results):
-    - `+model/robotRobTolBox.m` uses properties it never declares.
-    - `+model/robotRobTolBoxConf.m` builds an 8-state system on a 4-state model.
-    - `+model/testurdf2casadiwrapperOnMatlab.m` calls `model.urdf2casadiWrapperConf()`, but the file is `urdf2casadiWrapperModelConf.m`.
+    - `src/+model/robotRobTolBox.m` uses properties it never declares.
+    - `src/+model/robotRobTolBoxConf.m` builds an 8-state system on a 4-state model.
+    - `src/+model/testurdf2casadiwrapperOnMatlab.m` calls `model.urdf2casadiWrapperConf()`, but the file is `src/examples/urdf2casadiWrapperModelConf.m`.
     - `kuka_lwr_payload*.urdf` still contain unexpanded xacro expressions.
 
 ---
@@ -365,7 +369,7 @@ The report's settling band (2 % of `|x1,inf|`, about 0.06 rad) is larger than ha
 
 **Third-party material** stays under its original terms:
 
-- `+model/mdlPuma.m`: Puma 560 model from Peter Corke's Robotics Toolbox for MATLAB (LGPL-3.0, see the file header).
-- `+optim/fepOptimizer.m`: MATLAB port of Florian Feppon's null-space optimiser (<https://gitlab.com/florian.feppon/null-space-optimizer>); see that project for its licence.
-- `+model/urdf2casadiWrapper.m`: its forward-dynamics routine is taken from urdf2casadi's `symbolicForwardDynamics()` (see the comment in the file).
-- `+model/urdf/kuka_kr210*.urdf`: generated from ROS-Industrial's `kuka_experimental` package; `kuka_lwr*.urdf` from an `lwr_description` package.
+- `src/+model/mdlPuma.m`: Puma 560 model from Peter Corke's Robotics Toolbox for MATLAB (LGPL-3.0, see the file header).
+- `src/+optim/fepOptimizer.m`: MATLAB port of Florian Feppon's null-space optimiser (<https://gitlab.com/florian.feppon/null-space-optimizer>); see that project for its licence.
+- `src/+model/urdf2casadiWrapper.m`: its forward-dynamics routine is taken from urdf2casadi's `symbolicForwardDynamics()` (see the comment in the file).
+- `src/+model/urdf/kuka_kr210*.urdf`: generated from ROS-Industrial's `kuka_experimental` package; `kuka_lwr*.urdf` from an `lwr_description` package.

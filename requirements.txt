@@ -21,12 +21,12 @@ matplotlib>=3.7
 #       its bundled IPOPT and qpOASES plugins are needed for optimisation_type 3 and 5
 #   Statistics and Machine Learning Toolbox   (mvnrnd, used in every rollout)
 #
-# Required for teaching by demonstration (mainTeachingByDemonstration.m)
-#   Control System Toolbox                    (lqr, used by +controller/lqrController.m)
+# Required for teaching by demonstration (scripts/mainTeachingByDemonstration.m)
+#   Control System Toolbox                    (lqr, used by src/+controller/lqrController.m)
 #
 # Only for the legacy / example models (not needed for the Pendubot results)
-#   Symbolic Math Toolbox                     (+model/generateModel.m)
-#   Robotics Toolbox for MATLAB, Peter Corke  (+model/mdlPuma.m, +model/generateModel.m)
-#   urdf2casadi and its spatial_v2 helpers    (+model/urdf2casadiWrapper.m)
-#   iDynTree MATLAB bindings                  (+model/testurdf2casadiwrapperOnMatlab.m)
+#   Symbolic Math Toolbox                     (src/+model/generateModel.m)
+#   Robotics Toolbox for MATLAB, Peter Corke  (src/+model/mdlPuma.m, src/+model/generateModel.m)
+#   urdf2casadi and its spatial_v2 helpers    (src/+model/urdf2casadiWrapper.m)
+#   iDynTree MATLAB bindings                  (src/+model/testurdf2casadiwrapperOnMatlab.m)
 # -----------------------------------------------------------------------------

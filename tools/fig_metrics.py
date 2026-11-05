@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Extract closed-loop trajectories from MATLAB .fig files and compute metrics.
 
-The figures written by ``visualization.m`` / ``visualizationAux.m`` contain one
+The figures written by ``src/visualization.m`` / ``src/visualizationAux.m`` contain one
 subplot per state (x1..x4) plus one for the torque u1. A nominal run stores
 5 lines; the parameter sweep (v_nominal scaled by 1.0, 1.1, ..., 1.8) stores
 9 runs x 5 channels = 45 lines. This script recovers those lines without

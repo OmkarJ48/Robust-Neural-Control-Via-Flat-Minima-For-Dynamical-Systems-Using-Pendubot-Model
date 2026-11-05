@@ -7,9 +7,14 @@ clc;
 addpath('D:\Family\Omkar\Dissertation - Robust Neural Control via Flatness Optimization for Dynamical Systems\matlab_code\matlab_code\casadi');
 import casadi.*
 
+% Project paths (this script lives in <repo>/scripts; the code is in <repo>/src)
+repo_root = fileparts(fileparts(mfilename('fullpath')));
+addpath(fullfile(repo_root, 'src'));
+addpath(fullfile(repo_root, 'src', 'examples'));
+
 % Configuration folder
 name_folder_conf = 'test_drive';
-path_to_conf = fullfile(pwd, 'robotics_result', 'robust_optimization', name_folder_conf);
+path_to_conf = fullfile(repo_root, 'robotics_result', 'robust_optimization', name_folder_conf);
 addpath(path_to_conf);
 
 %% Control flags

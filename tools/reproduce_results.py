@@ -3,7 +3,7 @@
 
 For each reported run (10 = FEP, 31 = Adam, 37 = Yama) this script loads the
 saved ``init_param.mat`` (warm start) and ``optimal_param.mat`` (trained
-weights), simulates the 9-point m2/l2 sweep of ``visualization.m`` with
+weights), simulates the 9-point m2/l2 sweep of ``src/visualization.m`` with
 ``pendubot_sim.py`` and prints settling time, overshoot, offset from upright
 and torque statistics. It also writes ``docs/figures/parameter_sweep_x1.png``.
 
@@ -20,7 +20,7 @@ recovered by least squares from MATLAB's own saved rollouts (residual ~1e-13):
   (Optimization_*.fig, Testing_*.fig, 26 Jul 2025) uses the run-37 range, so
   that range is used here.
 * "current" is the committed ``normalization_data.mat`` (23 Aug 2025, 18:58);
-  it is what ``main.m`` with ``flag_mode = 1`` uses today.
+  it is what ``scripts/main.m`` with ``flag_mode = 1`` uses today.
 
 Usage:  python tools/reproduce_results.py [--plant coded|documented] [--no-plot]
 """
